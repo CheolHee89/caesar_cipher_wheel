@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>Caesar Cipher Wheel with Connector Lines</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0; padding: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 100vh;
+      background: #f0f0f0;
+      font-family: sans-serif;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 10px;
+    }
+    .wheel-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      margin-bottom: 20px;
+      background: #fafafa;
+      border: 1px solid #ccc;
+      border-radius: 50%;
+      overflow: hidden;
+    }
+    /* SVG 연결선용 */
+    .connector-svg {
+      position: absolute;
+      left: 0; top: 0;
+      width: 400px;
+      height: 400px;
+      pointer-events: none;
+    }
+    .letter {
+      position: absolute;
+      font-size: 1.2rem;
+      font-weight: bold;
+      user-select: none;
+      transform-origin: center;
+    }
+    .inner {
+      color: #333;
+    }
+    .outer {
+      color: #a0522d;
+    }
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .controls label {
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <h1>나만의 시저 암호 휠</h1>
+  <div class="wheel-container" id="wheelContainer">
+    <svg class="connector-svg" id="connectorSVG" viewBox="0 0 400 400"></svg>
+  </div>
+  <div class="controls">
+    <label for="shiftRange">Shift: <span id="shiftValue">0</span></label>
+    <input type="range" id="shiftRange" min="0" max="25" value="0" />
+  </div>
+  
+  <script>
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+    const container = document.getElementById("wheelContainer");
+    const svg = document.getElementById("connectorSVG");
+    const shiftRange = document.getElementById("shiftRange");
+    const shiftValue = document.getElementById("shiftValue");
+
+    const SIZE = 400;
+    const CENTER = SIZE / 2; // (200,200)
+    const radiusInner = 100;  // 내부 링 반지름
+    const radiusOuter = 150;  // 외부 링 반지름
+
+    let innerLetterElems = [];
+    let outerLetterElems = [];
+    let connectorLines = [];
+
+    // 내부 링 생성 (고정 위치)
+    function createInnerRing() {
+      for (let i = 0; i < 26; i++) {
+        const angleDeg = (360 / 26) * i;
+        const angleRad = angleDeg * (Math.PI / 180);
+        const x = CENTER + radiusInner * Math.cos(angleRad);
+        const y = CENTER + radiusInner * Math.sin(angleRad);
+
+        const div = document.createElement("div");
+        div.classList.add("letter", "inner");
+        div.textContent = letters[i];
+        div.style.left = x + "px";
+        div.style.top = y + "px";
+        // 글자가 항상 수평을 유지하도록 회전 보정 (회전 각도는 각 슬롯의 방향)
+        div.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) rotate(-90deg)`;
+
+        container.appendChild(div);
+        innerLetterElems.push(div);
+      }
+    }
+
+    // 외부 링 생성 (위치 고정, 텍스트는 shift에 따라 변경)
+    function createOuterRing() {
+      for (let i = 0; i < 26; i++) {
+        const angleDeg = (360 / 26) * i;
+        const angleRad = angleDeg * (Math.PI / 180);
+        const x = CENTER + radiusOuter * Math.cos(angleRad);
+        const y = CENTER + radiusOuter * Math.sin(angleRad);
+
+        const div = document.createElement("div");
+        div.classList.add("letter", "outer");
+        div.textContent = letters[i]; // 초기 shift = 0
+        div.style.left = x + "px";
+        div.style.top = y + "px";
+        div.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) rotate(-90deg)`;
+
+        container.appendChild(div);
+        outerLetterElems.push(div);
+      }
+    }
+
+    // 연결선(매칭선) 생성
+    function createConnectorLines() {
+      for (let i = 0; i < 26; i++) {
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("stroke", "rgba(0,0,0,0.3)");
+        line.setAttribute("stroke-width", "1");
+        svg.appendChild(line);
+        connectorLines.push(line);
+      }
+    }
+
+    // Shift 업데이트: 외부 링의 텍스트만 업데이트하고, 연결선은 항상 같은 각도의 두 점을 연결
+    function updateShift() {
+      const shift = parseInt(shiftRange.value, 10);
+      shiftValue.textContent = shift;
+
+      // 외부 링 텍스트 업데이트
+      for (let i = 0; i < 26; i++) {
+        const letterIndex = (i + shift) % 26;
+        outerLetterElems[i].textContent = letters[letterIndex];
+      }
+
+      // 연결선 업데이트: 각도는 고정 (i번째 내부, i번째 외부)
+      for (let i = 0; i < 26; i++) {
+        const angleRad = (i * 2 * Math.PI) / 26;
+        const x1 = CENTER + radiusInner * Math.cos(angleRad);
+        const y1 = CENTER + radiusInner * Math.sin(angleRad);
+        const x2 = CENTER + radiusOuter * Math.cos(angleRad);
+        const y2 = CENTER + radiusOuter * Math.sin(angleRad);
+        const line = connectorLines[i];
+        line.setAttribute("x1", x1);
+        line.setAttribute("y1", y1);
+        line.setAttribute("x2", x2);
+        line.setAttribute("y2", y2);
+      }
+    }
+
+    // 초기화: 내부 링, 외부 링, 연결선 생성 및 shift 업데이트
+    createInnerRing();
+    createOuterRing();
+    createConnectorLines();
+    updateShift();
+
+    // 슬라이더 이벤트
+    shiftRange.addEventListener("input", updateShift);
+  </script>
+</body>
+</html>

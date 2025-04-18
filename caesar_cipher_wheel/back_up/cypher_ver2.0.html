@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Caesar Cipher Wheel - Mini Game with Hint</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- NatGeo Kids 스타일 (원한다면 삭제/대체 가능) -->
+  <link rel="stylesheet" href="https://assets-cdn.nationalgeographic.com/natgeo/df1f7836fdd5-release-03-18-2025.0/client/kids/css/kids-83d8a3a7.css"/>
+  <style>
+    /* 전체 배경: 밤하늘 느낌 */
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: "Trebuchet MS", Arial, sans-serif;
+      background: radial-gradient(ellipse at center, #1d2c4e 0%, #0b0f1c 100%);
+      color: #fff;
+      text-align: center;
+    }
+    h1 {
+      margin: 20px 0 10px;
+      font-size: 2rem;
+      letter-spacing: 1px;
+      text-shadow: 1px 1px 2px #000;
+    }
+    .top-code-container {
+      display: inline-flex;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .code-box {
+      width: 50px;
+      height: 50px;
+      background: rgba(255,255,255,0.1);
+      border: 2px solid rgba(255,255,255,0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #ffd700;
+      text-shadow: 1px 1px 2px #000;
+    }
+    .instruction {
+      margin: 10px auto 10px auto;
+      font-size: 1rem;
+      color: #eee;
+      max-width: 480px;
+      line-height: 1.4;
+    }
+    /* 결과/힌트 메시지 */
+    .result-message {
+      margin-top: 10px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #ffd700;
+      min-height: 24px; /* 공간 확보 */
+    }
+
+    /* 암호판 전체 컨테이너 (정확히 400x400) */
+    .cipher-container {
+      position: relative;
+      width: 400px;
+      height: 400px;
+      margin: 20px auto; /* 가운데 정렬 */
+    }
+    /* 암호판(바탕 원) */
+    .cipher-wheel {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: radial-gradient(circle at center, #a87f47 0%, #5e4524 80%);
+      box-shadow: 0 0 20px rgba(0,0,0,0.5), inset 0 0 40px rgba(0,0,0,0.4);
+    }
+    /* 연결선 SVG */
+    .connector-svg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 400px;
+      height: 400px;
+      pointer-events: none;
+    }
+    /* 잠금 아이콘 */
+    .lock-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(145deg, #444 0%, #222 80%);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: #fff;
+      text-shadow: 1px 1px 2px #000;
+      font-family: sans-serif;
+    }
+    .lock-icon::before {
+      content: "LOCK";
+      font-weight: bold;
+      letter-spacing: 1px;
+    }
+
+    /* 알파벳 공통 스타일 */
+    .letter {
+      position: absolute; /* cipher-container 내부 절대 위치 */
+      font-size: 1.3rem;
+      font-weight: bold;
+      user-select: none;
+      transform-origin: center;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    }
+    .inner {
+      color: #ffe4a8; /* 내부 링: 밝은 금색 */
+    }
+    .outer {
+      color: #fff9c7; /* 외부 링: 노란 톤 */
+    }
+
+    /* 슬라이더/레이블 */
+    .controls {
+      margin: 10px auto;
+      color: #fff;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .controls label {
+      font-weight: bold;
+    }
+    .controls input[type="range"] {
+      width: 200px;
+    }
+
+    /* 하단 버튼들 */
+    .button-container {
+      margin-top: 10px;
+    }
+    button {
+      margin: 0 5px;
+      padding: 8px 14px;
+      font-size: 1rem;
+      background: #333;
+      color: #fff;
+      border: 1px solid #888;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #444;
+    }
+  </style>
+</head>
+<body>
+  <h1>Caesar Cipher Wheel - Mini Game + Hint</h1>
+
+  <!-- 암호화된 단어를 표시할 영역 -->
+  <div class="top-code-container" id="codeBoxes">
+    <!-- code-box들이 동적으로 들어갈 예정 -->
+  </div>
+
+  <!-- 안내 문구 -->
+  <div class="instruction">
+    Rotate the outer wheel to guess the correct shift.<br/>
+    Then click "Check Shift" or get a hint if you need help!
+  </div>
+
+  <!-- 결과/힌트 메시지 -->
+  <div class="result-message" id="resultMessage"></div>
+
+  <!-- 암호 휠 컨테이너 -->
+  <div class="cipher-container" id="cipherContainer">
+    <div class="cipher-wheel"></div>
+    <svg class="connector-svg" id="connectorSVG" viewBox="0 0 400 400"></svg>
+    <div class="lock-icon"></div>
+  </div>
+
+  <!-- Shift 슬라이더 -->
+  <div class="controls">
+    <label for="shiftRange">Shift: <span id="shiftValue">0</span></label>
+    <input type="range" id="shiftRange" min="0" max="25" value="0"/>
+  </div>
+
+  <!-- 하단 버튼들 -->
+  <div class="button-container">
+    <button id="checkBtn">Check Shift</button>
+    <button id="hintBtn">Hint</button>
+    <button id="newBtn">New Puzzle</button>
+  </div>
+
+  <script>
+    /******************************************************
+     * 1. DATA & UTILITIES
+     ******************************************************/
+    const puzzleWords = ["DOG","CAT","FISH","CODE","KIDS","LOCK","MOON","MATH","STAR","PLAN"];
+    const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+    function pickRandomWord() {
+      const idx = Math.floor(Math.random() * puzzleWords.length);
+      return puzzleWords[idx];
+    }
+    function getRandomShift() {
+      return Math.floor(Math.random() * 26);
+    }
+    // 시저 암호화
+    function caesarEncrypt(word, shift) {
+      let result = "";
+      for (let ch of word) {
+        const baseIdx = letters.indexOf(ch);
+        if (baseIdx === -1) {
+          result += ch;
+        } else {
+          const newIdx = (baseIdx + shift) % 26;
+          result += letters[newIdx];
+        }
+      }
+      return result;
+    }
+
+    /******************************************************
+     * 2. DOM ELEMENTS
+     ******************************************************/
+    const container = document.getElementById("cipherContainer");
+    const svg = document.getElementById("connectorSVG");
+    const shiftRange = document.getElementById("shiftRange");
+    const shiftValue = document.getElementById("shiftValue");
+    const resultMessage = document.getElementById("resultMessage");
+    const codeBoxes = document.getElementById("codeBoxes");
+    const checkBtn = document.getElementById("checkBtn");
+    const hintBtn = document.getElementById("hintBtn");
+    const newBtn = document.getElementById("newBtn");
+
+    /******************************************************
+     * 3. GLOBAL STATE
+     ******************************************************/
+    let currentWord = "";   // 원본 단어
+    let currentShift = 0;   // 실제 shift
+    let ciphered = "";      // 암호화된 결과
+    // 휠 설정
+    const SIZE = 400;
+    const CENTER = SIZE / 2;
+    const radiusInner = 95;   // 내부 링 반지름
+    const radiusOuter = 155;  // 외부 링 반지름
+    let innerLetterElems = [];
+    let outerLetterElems = [];
+    let connectorLines = [];
+
+    /******************************************************
+     * 4. CAESAR WHEEL SETUP
+     ******************************************************/
+    // 내부 링 생성
+    function createInnerRing() {
+      for (let i = 0; i < 26; i++) {
+        const angleDeg = (360 / 26) * i;
+        const angleRad = angleDeg * (Math.PI / 180);
+        const x = CENTER + radiusInner * Math.cos(angleRad);
+        const y = CENTER + radiusInner * Math.sin(angleRad);
+
+        const div = document.createElement("div");
+        div.classList.add("letter", "inner");
+        div.textContent = letters[i];
+
+        container.appendChild(div);
+        div.style.left = x + "px";
+        div.style.top = y + "px";
+        div.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) rotate(-90deg)`;
+
+        innerLetterElems.push(div);
+      }
+    }
+    // 외부 링 생성
+    function createOuterRing() {
+      for (let i = 0; i < 26; i++) {
+        const angleDeg = (360 / 26) * i;
+        const angleRad = angleDeg * (Math.PI / 180);
+        const x = CENTER + radiusOuter * Math.cos(angleRad);
+        const y = CENTER + radiusOuter * Math.sin(angleRad);
+
+        const div = document.createElement("div");
+        div.classList.add("letter", "outer");
+        div.textContent = letters[i];
+
+        container.appendChild(div);
+        div.style.left = x + "px";
+        div.style.top = y + "px";
+        div.style.transform = `translate(-50%, -50%) rotate(${angleDeg}deg) rotate(-90deg)`;
+
+        outerLetterElems.push(div);
+      }
+    }
+    // 연결선 생성
+    function createConnectorLines() {
+      for (let i = 0; i < 26; i++) {
+        const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+        line.setAttribute("stroke", "rgba(255, 215, 0, 0.5)");
+        line.setAttribute("stroke-width", "2");
+        svg.appendChild(line);
+        connectorLines.push(line);
+      }
+    }
+    // 휠 업데이트
+    function updateShift() {
+      const shift = parseInt(shiftRange.value, 10);
+      shiftValue.textContent = shift;
+
+      // 외부 링 텍스트 변경
+      for (let i = 0; i < 26; i++) {
+        const letterIndex = (i + shift) % 26;
+        outerLetterElems[i].textContent = letters[letterIndex];
+      }
+
+      // 연결선 재계산
+      for (let i = 0; i < 26; i++) {
+        const angleRad = (i * 2 * Math.PI) / 26;
+        const x1 = CENTER + radiusInner * Math.cos(angleRad);
+        const y1 = CENTER + radiusInner * Math.sin(angleRad);
+        const x2 = CENTER + radiusOuter * Math.cos(angleRad);
+        const y2 = CENTER + radiusOuter * Math.sin(angleRad);
+
+        connectorLines[i].setAttribute("x1", x1);
+        connectorLines[i].setAttribute("y1", y1);
+        connectorLines[i].setAttribute("x2", x2);
+        connectorLines[i].setAttribute("y2", y2);
+      }
+    }
+
+    /******************************************************
+     * 5. GAME LOGIC
+     ******************************************************/
+    // 새 퍼즐 생성
+    function newPuzzle() {
+      currentWord = pickRandomWord(); 
+      currentShift = getRandomShift();
+      ciphered = caesarEncrypt(currentWord, currentShift);
+
+      // 상단 code-box 표시
+      codeBoxes.innerHTML = "";
+      for (let ch of ciphered) {
+        const div = document.createElement("div");
+        div.classList.add("code-box");
+        div.textContent = ch;
+        codeBoxes.appendChild(div);
+      }
+
+      // 초기화
+      shiftRange.value = 0;
+      shiftValue.textContent = "0";
+      resultMessage.textContent = "";
+      updateShift();
+    }
+
+    // 정답 확인
+    function checkShift() {
+      const userShift = parseInt(shiftRange.value, 10);
+      if (userShift === currentShift) {
+        resultMessage.style.color = "#00ffcc";
+        resultMessage.textContent = `Correct! The hidden word is "${currentWord}".`;
+      } else {
+        resultMessage.style.color = "#ff5555";
+        resultMessage.textContent = "Wrong shift. Try again or get a hint!";
+      }
+    }
+
+    // 힌트 기능
+    function getHint() {
+      // 무작위로 2가지 중 선택
+      const hintType = Math.random() < 0.5 ? "shiftRange" : "partialLetter";
+
+      if (hintType === "shiftRange") {
+        // SHIFT 범위를 좁혀주는 힌트
+        // ex) shift=10 → "Shift는 7 이상 13 이하입니다."
+        const rangeSize = 3; // 범위 폭
+        let low = currentShift - rangeSize;
+        let high = currentShift + rangeSize;
+        if (low < 0) low = 0;
+        if (high > 25) high = 25;
+        resultMessage.style.color = "#FFD700";
+        resultMessage.textContent = `Hint: The shift is between ${low} and ${high}.`;
+      } else {
+        // 원본 단어 중 하나의 글자 공개
+        // ex) "DOG" → "첫 번째 글자는 'D'"
+        const randomIndex = Math.floor(Math.random() * currentWord.length);
+        const revealedChar = currentWord[randomIndex];
+        resultMessage.style.color = "#FFD700";
+        resultMessage.textContent = `Hint: The #${randomIndex + 1} letter of the original word is "${revealedChar}".`;
+      }
+    }
+
+    /******************************************************
+     * 6. INIT
+     ******************************************************/
+    function init() {
+      createInnerRing();
+      createOuterRing();
+      createConnectorLines();
+      updateShift();
+      newPuzzle();
+    }
+
+    // 이벤트 리스너
+    shiftRange.addEventListener("input", updateShift);
+    checkBtn.addEventListener("click", checkShift);
+    hintBtn.addEventListener("click", getHint);
+    newBtn.addEventListener("click", newPuzzle);
+
+    // 실행
+    init();
+  </script>
+</body>
+</html>
