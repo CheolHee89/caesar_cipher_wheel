@@ -185,6 +185,7 @@ function newPuzzle() {
   updateShift();
   hintBtn.disabled = false;
 }
+wrong_count = 0;
 function checkWord() {
   const guess = guessInput.value.trim().toUpperCase();
   const t = translations[currentLang];
@@ -216,6 +217,11 @@ function checkWord() {
     // 모달 띄우기
     successModal.style.display = "block";
   } else {
+    wrong_count++;
+    if(wrong_count == 2){
+      showHint()
+      wrong_count = 0;
+    }
     resultMessage.style.color = "#ff5555";
     resultMessage.textContent = t.wrong;
   }
