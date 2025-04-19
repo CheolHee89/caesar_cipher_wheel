@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Caesar Cipher Wheel - Word Guess Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <header>
+    <h1 id="titleText">Caesar Cipher Wheel - Word Guess Game</h1>
+    <button id="langToggle">한국어</button>
+    <!-- 게임 설명 버튼 -->
+    <button id="instrBtn" class="instr-btn">How to Play</button>
+  </header>
+
+  <!-- 암호화된 단어 표시 -->
+  <div class="top-code-container" id="codeBoxes">
+    <!-- 동적으로 채워짐 -->
+  </div>
+
+  <!-- 안내 문구 -->
+  <div class="instruction" id="instructionText">
+    Rotate the wheel to decode the text.<br/>Then type your guess for the original word below.
+  </div>
+  <!-- 슬라이더 -->
+  <div class="controls">
+    <label id="sliderLabel">
+      <span id="sliderText">Shift:</span> 
+      <span id="shiftValue">0</span>
+    </label>
+    <input type="range" id="shiftRange" min="0" max="25" value="0"/>
+  </div>
+  <!-- SHIFT 힌트 출력 영역 (기본적으로 숨김) -->
+  <div class="shift-output" id="shiftedOutput"></div>
+
+  <!-- 결과 메시지 -->
+  <div class="result-message" id="resultMessage"></div>
+
+  <!-- 암호 휠 컨테이너 -->
+  <div class="cipher-container" id="cipherContainer">
+    <div class="cipher-wheel"></div>
+    <div class="outer-ring-bg"></div>
+    <div class="inner-ring-bg"></div>
+    <svg class="connector-svg" id="connectorSVG" viewBox="0 0 400 400"></svg>
+    <div class="lock-icon"></div>
+  </div>
+
+
+  <!-- 단어 추측 입력 및 버튼 -->
+  <div class="guess-container">
+    <input type="text" id="guessInput" placeholder="Guess the word" />
+    <button id="checkBtn">Check Word</button>
+  </div>
+
+  <div class="button-container">
+    <button id="hintBtn">Show Hint</button>
+    <button id="newBtn">New Puzzle</button>
+  </div>
+
+  <!-- 홍보 푸터 -->
+  <footer class="promo">
+    <p>Powered by 한국폴리텍4대학 클라우드보안과</p>
+  </footer>
+
+  <div class="qr">
+    <img src="./images/qr_code.png" alt="">
+  </div>
+
+  <!-- 모달 (게임 설명) -->
+  <div id="instrModal" class="modal">
+    <div class="modal-content">
+      <span id="modalClose" class="close">&times;</span>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
