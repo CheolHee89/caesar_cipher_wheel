@@ -2,6 +2,7 @@
  * 1. TRANSLATIONS & LANGUAGE TOGGLE
  ******************************************************/
 let currentLang = "ko"; // 전역에서 한 번만 선언
+let isMusicPlaying = false; // 음악 재생 상태
 const translations = {
   en: {
     title: "Caesar Cipher Wheel - Word Guess Game",
@@ -254,7 +255,7 @@ window.addEventListener("click", function(event) {
 });
 
 /******************************************************
- * 7. INIT & LANGUAGE TOGGLE
+ * 7. INIT & LANGUAGE TOGGLE & MUSIC
  ******************************************************/
 function init() {
   createOuterRing();
@@ -263,7 +264,40 @@ function init() {
   updateShift();
   newPuzzle();
   updateLanguage();
+  initMusic();
 }
+function initMusic() {
+  const backgroundMusic = document.getElementById("backgroundMusic");
+  const clickSound = document.getElementById("clickSound");
+  const musicToggle = document.getElementById("musicToggle");
+  
+  backgroundMusic.volume = 0.3; // 볼륨 30%
+  clickSound.volume = 0.5; // 클릭 음 볼륨 50%
+  musicToggle.textContent = "🔇";
+  isMusicPlaying = false; // 초기 상태는 미재생
+  
+  // 음악 토글 버튼 이벤트
+  musicToggle.addEventListener("click", function(e) {
+    e.stopPropagation(); // 버블링 방지
+    
+    // 클릭 음향 효과 재생
+    clickSound.currentTime = 0;
+    clickSound.play().catch(function(error) {
+      console.log("Click sound play failed:", error);
+    });
+    
+    if (isMusicPlaying) {
+      backgroundMusic.pause();
+      musicToggle.textContent = "🔇";
+      isMusicPlaying = false;
+    } else {
+      backgroundMusic.play();
+      musicToggle.textContent = "🔊";
+      isMusicPlaying = true;
+    }
+  });
+}
+
 shiftRange.addEventListener("input", updateShift);
 checkBtn.addEventListener("click", checkWord);
 newBtn.addEventListener("click", newPuzzle);

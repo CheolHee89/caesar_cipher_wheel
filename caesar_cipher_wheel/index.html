@@ -9,10 +9,26 @@
 <body>
   <header>
     <h1 id="titleText">Caesar Cipher Wheel - Word Guess Game</h1>
-    <button id="langToggle">한국어</button>
     <!-- 게임 설명 버튼 -->
     <button id="instrBtn" class="instr-btn">How to Play</button>
+    <!-- 오른쪽 상단 버튼들 -->
+    <div class="header-buttons">
+      <!-- 음악 토글 버튼 -->
+      <button id="musicToggle" class="music-btn" title="Toggle Music">🔇</button>
+      <!-- 언어 토글 버튼 -->
+      <button id="langToggle" class="lang-btn" title="Language Toggle">English</button>
+    </div>
   </header>
+
+  <!-- 배경 음악 -->
+  <audio id="backgroundMusic" loop preload="auto">
+    <source src="./music/background_music.mp3" type="audio/mpeg">
+  </audio>
+
+  <!-- 버튼 클릭 음향 효과 -->
+  <audio id="clickSound" preload="auto">
+    <source src="./music/click_sound.mp3" type="audio/mpeg">
+  </audio>
 
   <!-- 암호화된 단어 표시 -->
   <div class="top-code-container" id="codeBoxes">
