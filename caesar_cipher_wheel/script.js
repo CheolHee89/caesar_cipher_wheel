@@ -99,8 +99,8 @@ const instrBtn = document.getElementById("instrBtn");
 let originalWord = "";
 let shiftSecret = 0;
 let ciphered = "";
-const SIZE = 400, CENTER = SIZE / 2;
-const radiusInner = 95, radiusOuter = 155;
+const SIZE = 520, CENTER = SIZE / 2;
+const radiusInner = 123.5, radiusOuter = 201.5;
 let innerLetterElems = [], outerLetterElems = [], connectorLines = [];
 
 function createOuterRing() {
