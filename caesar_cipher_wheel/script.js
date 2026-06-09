@@ -103,6 +103,9 @@ let ciphered = "";
 const SIZE = 520, CENTER = SIZE / 2;
 const radiusInner = 123.5, radiusOuter = 201.5;
 let innerLetterElems = [], outerLetterElems = [], connectorLines = [];
+let isDragging = false;
+let dragStartAngle = 0;
+let shiftAtDragStart = 0;
 
 function createOuterRing() {
   for (let i = 0; i < 26; i++) {
@@ -161,6 +164,75 @@ function updateShift() {
     connectorLines[i].setAttribute("x2", x2);
     connectorLines[i].setAttribute("y2", y2);
   }
+}
+
+/******************************************************
+ * 4.5. DRAG INTERACTION FOR CIPHER WHEEL
+ ******************************************************/
+function getAngleFromPoint(x, y) {
+  // 컨테이너의 위치 계산
+  const rect = container.getBoundingClientRect();
+  const centerX = rect.left + CENTER;
+  const centerY = rect.top + CENTER;
+  
+  const dx = x - centerX;
+  const dy = y - centerY;
+  
+  // atan2를 사용해 각도 계산 (라디안)
+  return Math.atan2(dy, dx);
+}
+
+function setupWheelDragInteraction() {
+  container.addEventListener("mousedown", function(e) {
+    isDragging = true;
+    dragStartAngle = getAngleFromPoint(e.clientX, e.clientY);
+    shiftAtDragStart = parseInt(shiftRange.value, 10);
+  });
+  
+  container.addEventListener("touchstart", function(e) {
+    isDragging = true;
+    dragStartAngle = getAngleFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    shiftAtDragStart = parseInt(shiftRange.value, 10);
+  });
+  
+  document.addEventListener("mousemove", function(e) {
+    if (!isDragging) return;
+    
+    const currentAngle = getAngleFromPoint(e.clientX, e.clientY);
+    const angleDiff = dragStartAngle - currentAngle;  // 부호 반대
+    
+    // 각도 차이를 shift 값으로 변환 (26개의 글자이므로 360도 = 26)
+    const shiftChange = Math.round((angleDiff / (2 * Math.PI)) * 26);
+    
+    let newShift = (shiftAtDragStart + shiftChange) % 26;
+    if (newShift < 0) newShift += 26;
+    
+    shiftRange.value = newShift;
+    updateShift();
+  });
+  
+  document.addEventListener("touchmove", function(e) {
+    if (!isDragging) return;
+    
+    const currentAngle = getAngleFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+    const angleDiff = dragStartAngle - currentAngle;  // 부호 반대
+    
+    const shiftChange = Math.round((angleDiff / (2 * Math.PI)) * 26);
+    
+    let newShift = (shiftAtDragStart + shiftChange) % 26;
+    if (newShift < 0) newShift += 26;
+    
+    shiftRange.value = newShift;
+    updateShift();
+  });
+  
+  document.addEventListener("mouseup", function() {
+    isDragging = false;
+  });
+  
+  document.addEventListener("touchend", function() {
+    isDragging = false;
+  });
 }
 
 /******************************************************
@@ -265,6 +337,7 @@ function init() {
   newPuzzle();
   updateLanguage();
   initMusic();
+  setupWheelDragInteraction();
 }
 function initMusic() {
   const backgroundMusic = document.getElementById("backgroundMusic");
