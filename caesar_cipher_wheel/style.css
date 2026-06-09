@@ -255,6 +255,7 @@ body {
   /* ===== 푸터 - 홍보 영역 ===== */
   footer.promo {
     margin-top: 26px;
+    margin-bottom: 5px;
     font-size: 1.17rem;
     color: #ccc;
     padding: 13px 0;
@@ -325,3 +326,16 @@ body {
     .result-message { font-size: 1rem; }
     .qr{ display: none;}
   }
+
+  /* ===== QR 코드 ===== */
+  .qr {
+    margin-top: -100px;
+    transform: scale(0.7);
+    display: inline-block;
+  }
+  /* 
+  .qr img {
+    max-width: 200px;
+    width: 100%;
+    height: auto;
+  } */
